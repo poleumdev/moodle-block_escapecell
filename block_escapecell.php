@@ -125,7 +125,6 @@ function maFonction(nbNiveau, level, bonus, qcm, onlyqcm, info) {
             imgBonus.style.top = haut;
             top.appendChild(imgBonus);
         }
-        
         if (nbNiveau == maxLevel) {
             var imgTet = document.createElement('img');
             imgTet.src = '/blocks/escapecell/pix/final' + info + '.png';
