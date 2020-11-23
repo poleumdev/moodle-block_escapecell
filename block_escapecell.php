@@ -212,7 +212,7 @@ function maFonction(nbNiveau, level, bonus, qcm, onlyqcm, info) {
             $labeltotscore = get_string('totscore', 'block_escapecell');
             $optionsbtn = array('class' => 'overviewButton');
 
-            $this->content->text .= '<br/><center>';
+            $this->content->text .= '<br/><br/><center>';
             $this->content->text .= $OUTPUT->single_button($urltotscore, $labeltotscore, 'get', $optionsbtn);
             $this->content->text .= '</center>';
         }
