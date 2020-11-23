@@ -32,15 +32,10 @@ services:
 
 before_install:
   - phpenv config-rm xdebug.ini
-  - nvm install 8.9
-  - nvm use 8.9
-  - cd ../..
-  - composer selfupdate
-  - composer create-project -n --no-dev --prefer-dist blackboard-open-source/moodle-plugin-ci ci dev-master
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
   
 install:
-  - moodle-plugin-ci install
+  - moodle-plugin-ci install -vvv
 
 script:
   - moodle-plugin-ci phplint
