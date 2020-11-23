@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'block_escapecell';
 $plugin->release = '0.2.0';
-$plugin->version = 2020042904;
+$plugin->version = 2020112301;
 $plugin->requires = 2012112900;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->dependencies = [
