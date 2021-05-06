@@ -164,6 +164,86 @@ function getstudentbyniv($niv) {
     return $std;
 }
 
+function computstat($courseid, $niv, $nobonus, $bonus1, $bonus2, $bonus3) {
+    global $DB;
+    $qcmmod = $DB->get_record('modules', ['name' => 'quiz'], $fields = 'id');
+    $qcmmodid = $qcmmod->id;
+    $escapemod = $DB->get_record('modules', ['name' => 'escapecell'], $fields = 'id');
+    $escapemodid = $escapemod->id;
+    // Instance du jeu.
+    $req = "select id from {escapecell} where course = ? and startlevel = ?";
+    $idjeu = $DB->get_field_sql($req, array ($courseid, $niv));
+    // Id section.
+    $req = "SELECT section FROM {course_modules} where course = ? and module = ?
+               and instance = ?";
+    $idsection = $DB->get_field_sql($req, array ($courseid, $escapemodid, $idjeu));
+    // Instance qcm correspondant.
+    $req = "SELECT instance FROM {course_modules} WHERE section = ? and module = ?";
+    $instanceqcm = $DB->get_field_sql($req, array ($idsection, $qcmmodid));
+    // Ensemble des etudiants qui ont passés ce QCM.
+    $req = "SELECT id FROM {grade_items} WHERE iteminstance = ? and courseid = ?";
+    $idtest = $DB->get_field_sql($req, array ($instanceqcm, $courseid));
+
+    $lststudents = liststudent($courseid);
+    $onlystudents = array(); // Uniquement eleves inscrit, util pour limiter aux eleves et déterminer les non participant.
+    foreach ($lststudents as $student) {
+        $onlystudents[$student->id] = -1;
+    }
+
+    $studentquiz = $DB->get_records('grade_grades', array('itemid' => $idtest));
+    $students = array();
+    // Soit $students[userid] = nb bonus obtenu dans jeu ou -1 si pas de jeu fait.
+    foreach ($studentquiz as $student) {
+        if (isset($student->finalgrade) && isset($onlystudents[$student->userid])) {
+            $students[$student->userid] = -1;
+            $onlystudents[$student->userid] = 0;
+        }
+    }
+
+    // On prend tous les resultats pour l'instance du jeu sur le niveau.
+    $resultjeux = $DB->get_records('escapecell_score', array('jeux' => $idjeu, 'niveau' => $niv));
+    foreach ($resultjeux as $resultat) {
+        // Si l'etudiant a passé le qcm alors on enregistre le resultat obtenu.
+        if (isset($students[$resultat->userid])) {
+            $students[$resultat->userid] = $resultat->score;
+        }
+        if (isset($onlystudents[$resultat->userid])) {
+            $onlystudents[$resultat->userid] = 0;
+        }
+    }
+
+    // On a le nombre "uniquement qcm" en faisant la somme des score a -1.
+    $uniqqcm = 0;
+    $repartqcm = [0, 0, 0, 0];
+    $repartjeu = [0, 0, 0, 0];
+    foreach ($students as $key => $value) {
+        if ($value == -1) {
+            $uniqqcm++;
+        } else {
+            $repartqcm[$value] = $repartqcm[$value] + 1;
+        }
+    }
+    $noparticipation = 0;
+    foreach ($onlystudents as $key => $value) {
+        if ($value == -1) {
+            $noparticipation++;
+        }
+    }
+    $ret = array();
+    $ret[0] = $noparticipation;
+    $ret[1] = $uniqqcm;
+    $ret[2] = $nobonus - $repartqcm[0];
+    $ret[3] = $bonus1 - $repartqcm[1];
+    $ret[4] = $bonus2 - $repartqcm[2];
+    $ret[5] = $bonus3 - $repartqcm[3];
+
+    $ret[6] = $repartqcm[0];
+    $ret[7] = $repartqcm[1];
+    $ret[8] = $repartqcm[2];
+    $ret[9] = $repartqcm[3];
+    return $ret;
+}
+
 /**
  * Tests whether the current user is registered as a learner in the course.
  *

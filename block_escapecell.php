@@ -60,7 +60,7 @@ class block_escapecell extends block_base {
         $this->content->icons = array();
         $this->content->footer = '';
 
-        global $USER, $COURSE, $OUTPUT, $PAGE, $CFG;
+        global $USER, $COURSE, $OUTPUT, $CFG;
         $correspond = getquizescapecell();
         $niveaux = getlevel($correspond, $USER->id);
         $maxlevel = 6;
